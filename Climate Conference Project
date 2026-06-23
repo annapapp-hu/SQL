@@ -1,0 +1,66 @@
+Database: https://www.db-fiddle.com/f/pxMci1sLL945KHKYvpe9W6/1
+
+-- 1. [LEFT JOIN]  List the keynote speaker and the event they're presenting at.
+
+SELECT vips.last_name 
+, vips.first_name 
+, events.event_name
+FROM vips
+LEFT JOIN events
+ON vips.event=events.event_id
+WHERE events.event_type= 'Keynote';
+
+-- 2. [INNER JOIN] List all the VIPs (last and first name) who are attending the welcome party.
+
+SELECT vips.last_name
+, vips.first_name
+FROM vips
+INNER JOIN reservations
+ON vips.member_id = reservations.member_id
+WHERE reservations.welcome_rsvp = 1; 
+
+-- 3. [Multiples JOINs] List all members who are staying at the Marriott hotel.
+
+SELECT vips.last_name
+, vips.first_name
+, hotels.hotel_name
+FROM hotels
+JOIN reservations
+ON hotels.hotel_id = reservations.hotel
+JOIN vips
+ON reservations.member_id = vips.member_id
+WHERE hotels.hotel_name = 'Marriott';
+
+-- 4. [subquery] List all member ids who attend event Biodiversity and Ecosystem Services in a Changing Climate.
+
+SELECT vips.member_id
+FROM vips
+WHERE vips.event IN (SELECT events.event_id
+ FROM events
+ WHERE events.event_name = 'Biodiversity and Ecosystem Services in a Changing Climate' );
+
+-- 5. [SELF JOIN] List the name of members who provide information to others and who they provide it to.
+
+SELECT v1.last_name AS feedback_giver
+, v1.first_name AS feedback_giver_first
+, v2.last_name AS feedback_receiver
+,v2.first_name AS feedback_receiver_first
+FROM vips AS v1
+INNER JOIN vips AS v2
+ON v1.provides_feedback_to = v2.member_id;
+
+-- 6. [JOIN + subquery] Find VIPs staying at the hotel with the most reservations.
+
+SELECT v.first_name, v.last_name, h.hotel_name
+FROM vips v
+JOIN reservations r ON v.member_id = r.member_id
+JOIN hotels h ON r.hotel = h.hotel_id
+WHERE r.hotel = (
+    SELECT hotel 
+    FROM reservations 
+    GROUP BY hotel 
+    ORDER BY COUNT(*) DESC 
+    LIMIT 1
+);
+
+
